@@ -3,8 +3,7 @@ Your average discord success reposter that includes a delete function.
 
 
 ## How it works:
-![Alt Text](https://gyazo.com/7845095a76e24d25d7ae062363b2f625)
-https://gyazo.com/7845095a76e24d25d7ae062363b2f625
+![Alt Text](https://gyazo.com/7845095a76e24d25d7ae062363b2f625.gif)
   
 
 ## How to get ready:
