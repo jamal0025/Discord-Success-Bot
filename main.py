@@ -35,7 +35,7 @@ async def on_message(message):
             author = str(message.author)
             author = re.split(r'\b#\b', author, maxsplit=1)[0].strip() #Gets user's name without their tag
             image_url = message.attachments[0]['url']
-            tweet_text = ('Success by '+author)
+            tweet_text = ('Success by '+author) #Adjust how tweet looks
             tweet_image = image_url
             
             filename = 'temp.jpg' #Note: a file with this name will be saved in the file location alongside bot.
@@ -49,24 +49,35 @@ async def on_message(message):
                 tweet_id = str(upload_tweet.id)
                 
 
-                embed=discord.Embed(title="Tweet Posted! React to delete if you need.")
-                embed.set_footer(text="Created by @thecopbuddy") #on the 99.9% chance you will change this remember to credit <3
+                embed=discord.Embed(title="Tweet Posted! React below to undo tweet.")
+                embed.set_footer(text="Created by @thecopbuddy") #on the 99.9% chance you will change this remember to credit via twitter <3
                 sent_msg =  await bot.send_message(message.channel, embed=embed)
                 await bot.add_reaction(sent_msg, emoji="\U0001F5D1")
                 await asyncio.sleep(0.1) #Stops wait_for_reaction being triggered by the bot giving itself a reaction
 
+                tweet_owner = (message.author)
                 
-                react_delete = await bot.wait_for_reaction(emoji="\U0001F5D1",message=sent_msg)
-                if react_delete.reaction.emoji=="\U0001F5D1":
-                    try:
-                        api.destroy_status(tweet_id) #Deletes Tweet
-                        await bot.clear_reactions(sent_msg)
-                        edit_embed=discord.Embed(title="Tweet was deleted! Make sure to check images before posting.")
-                        edit_embed.set_footer(text="Created by @thecopbuddy")
-                        await bot.edit_message(sent_msg, embed=edit_embed)
-                    except:
-                        print('Error deleting tweet/telling user')
-                
+                owner_delete = False
+                while not owner_delete:
+                    react_delete = await bot.wait_for_reaction(message=sent_msg)
+
+                    gather_reactions = discord.utils.get(bot.messages, id=sent_msg.id)
+                    for member in gather_reactions.reactions:
+                        reactors = await bot.get_reaction_users(member)
+
+                    if react_delete.reaction.emoji=="\U0001F5D1" and tweet_owner in reactors: #Only starts delete if correct emoji used and owner of image reacts
+                        owner_delete = True
+                        try:
+                            api.destroy_status(tweet_id) #Deletes Tweet
+                            await bot.delete_message(message) #Deletes image sent by user
+                            await bot.clear_reactions(sent_msg)
+                            edit_embed=discord.Embed(title="Tweet was deleted! Make sure to check images before posting.",color=0x80ff00)
+                            edit_embed.set_footer(text="Created by @thecopbuddy")
+                            await bot.edit_message(sent_msg, embed=edit_embed)
+                        except:
+                            print('Error deleting tweet/telling user')
+                        
+                print('Owner of image deleted tweet')
                 
             else:
                 print("Unable to download/upload image")
